@@ -11,12 +11,8 @@ class CWSearchNode(
   val shift1: Int,
   val shift2: Int,
   val depth: Int,
-  getSet1: () => Set[CWSearchNode],
-  getSet2: () => Set[CWSearchNode],
   getParent: () => Option[CWSearchNode]) {
 
-  lazy val set1: Set[CWSearchNode] = getSet1()
-  lazy val set2: Set[CWSearchNode] = getSet2()
   lazy val parent: Option[CWSearchNode] = getParent()
 }
 
@@ -111,8 +107,6 @@ object CWSearch {
         shift1(n),
         shift2(n),
         n.depth,
-        () => set1(n).map(convert),
-        () => set2(n).map(convert),
         () => n.parentOpt.map(convert))
     }
 
@@ -130,19 +124,8 @@ object CWSearch {
       c => lookup.getOrElse(c, minDepth + 1)
     }
 
-    def init(node: CWSearchNode): Unit = {
-      // initialise lazy props
-      node.set1
-      node.set2
-      node.parent
-      node.children.valuesIterator.foreach(init)
-    }
-
-    def result(): CWSearch = {
-      val converted = convert(root)
-      init(converted)
-      new CWSearch(minDepth, converted, char)
-    }
+    def result(): CWSearch =
+      new CWSearch(minDepth, convert(root), char)
 
   }
 
