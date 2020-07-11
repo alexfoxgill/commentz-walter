@@ -10,50 +10,46 @@ object CWSearchSpec extends TestSuite {
   }
 
   val tests = Tests {
-    test("it returns None if no string found") {
-      val search = fixture("test")
+    test("returns None if no string found") {
+      val search = fixture("a")
 
       search.search("") ==> None
     }
 
-    test("it finds a keyword in itself") {
-      val search = fixture("test")
+    test("finds a keyword in itself") {
+      val search = fixture("a")
 
-      search.search("test") ==> Some(Result(0, "test"))
+      search.search("a") ==> Some(Result(0, "a"))
     }
 
-    test("it finds a keyword at the start") {
-      val search = fixture("test")
+    test("finds a keyword at the start") {
+      val search = fixture("a")
 
-      search.search("test1") ==> Some(Result(0, "test"))
+      search.search("ab") ==> Some(Result(0, "a"))
     }
 
-    test("it finds a keyword at the end") {
-      val search = fixture("test")
+    test("finds a keyword at the end") {
+      val search = fixture("b")
 
-      search.search("1test") ==> Some(Result(1, "test"))
+      search.search("ab") ==> Some(Result(1, "b"))
     }
 
-    test("it finds the first keyword in the string") {
-      val search = fixture("foo", "bar")
+    test("finds the first keyword in the string") {
+      val search = fixture("a", "b")
 
-      search.search("foobar") ==> Some(Result(0, "foo"))
+      search.search("ab") ==> Some(Result(0, "a"))
     }
 
-    test("it finds a keyword among similar") {
-      val search = fixture("foot", "food")
+    test("finds a keyword among similar") {
+      val search = fixture("aa", "ab")
 
-      search.search("fish food") ==> Some(Result(5, "food"))
+      search.search("baa") ==> Some(Result(1, "aa"))
     }
 
-    test("it works when going down an incorrect path initially") {
+    test("works when going down an incorrect path initially") {
       val search = fixture("bb")
 
       search.search("abb") ==> Some(Result(1, "bb"))
-    }
-
-    test("demo") {
-      val search = fixture("cacbaa", "acb", "aba", "acbab", "ccbab")
     }
   }
 }

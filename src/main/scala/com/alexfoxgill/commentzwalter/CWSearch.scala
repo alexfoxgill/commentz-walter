@@ -10,10 +10,10 @@ class CWSearchNode(
   val terminal: Boolean,
   val shift1: Int,
   val shift2: Int,
-  val depth: Int,
-  getParent: () => Option[CWSearchNode]) {
+  val depth: Int) {
 
-  lazy val parent: Option[CWSearchNode] = getParent()
+  def next(c: Char) = children.get(c).orNull
+
 }
 
 case class Result(start: Int, text: String)
@@ -24,27 +24,20 @@ class CWSearch(minLen: Int, root: CWSearchNode, char: Char => Int) {
     var i = minLen - 1
 
     while (i < text.length) {
-      var j = 0
-      var v = root
-      var toFind = text(i - j)
-      while (v.children.contains(toFind)) {
-        v = v.children(toFind)
+      var current = root
+      var candidate = current.next(text(i - current.depth))
+      while (candidate != null) {
+        val j = current.depth
 
-        if (v.terminal) {
-          return Some(Result(i - j, text.substring(i - j, i + v.depth - j)))
+        if (candidate.terminal) {
+          return Some(Result(i - j, text.substring(i - j, i + 1)))
         }
 
-        j += 1
-        toFind = text(i - j)
+        current = candidate
+        candidate = current.next(text(i - current.depth))
       }
 
-      val idx = 1 + i - j
-      val c = text(idx)
-      val charBump = char(c)
-      val s1 = v.shift1
-      val s2 = v.shift2
-      val s3 = charBump - j - 1
-      i += Math.min(s2, Math.max(s1, s3))
+      i += Math.min(current.shift2, Math.max(current.shift1, char(text(1 + i - current.depth)) - current.depth - 1))
     }
 
     None
@@ -106,8 +99,7 @@ object CWSearch {
         n.isTerminal,
         shift1(n),
         shift2(n),
-        n.depth,
-        () => n.parentOpt.map(convert))
+        n.depth)
     }
 
     val char: Char => Int = {
