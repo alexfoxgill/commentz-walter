@@ -18,40 +18,37 @@ class CWSearchNode(
   lazy val set1: Set[CWSearchNode] = getSet1()
   lazy val set2: Set[CWSearchNode] = getSet2()
   lazy val parent: Option[CWSearchNode] = getParent()
-
-  def has(c: Char) = children.contains(c)
 }
 
 case class Result(start: Int, text: String)
 
 class CWSearch(minLen: Int, root: CWSearchNode, char: Char => Int) {
-  private def getChild(node: CWSearchNode, text: String, index: Int): CWSearchNode = {
-    if (text.length < index) {
-      return null
-    }
-    node.children.get(text(index - 1)).orNull
-  }
 
   def search(text: String): Option[Result] = {
-    var v = root
-    var i = minLen
-    var j = 0
+    var i = minLen - 1
 
-    while (i <= text.length) {
-      var v_ = getChild(v, text, i - j)
-      while (v_ != null) {
-        v = v_
+    while (i < text.length) {
+      var j = 0
+      var v = root
+      var toFind = text(i - j)
+      while (v.children.contains(toFind)) {
+        v = v.children(toFind)
 
         if (v.terminal) {
-          return Some(Result(i - j - 1, text.substring(i - j - 1, i + v.depth - j - 1)))
+          return Some(Result(i - j, text.substring(i - j, i + v.depth - j)))
         }
 
-        j = j + 1
-        v_ = getChild(v, text, i - j)
+        j += 1
+        toFind = text(i - j)
       }
 
-      i = i + Math.min(v.shift2, Math.max(v.shift1, char(text(i - j - 1)) - j - 1))
-      j = 0
+      val idx = 1 + i - j
+      val c = text(idx)
+      val charBump = char(c)
+      val s1 = v.shift1
+      val s2 = v.shift2
+      val s3 = charBump - j - 1
+      i += Math.min(s2, Math.max(s1, s3))
     }
 
     None
@@ -77,7 +74,7 @@ object CWSearch {
 
   class BuildState(root: Root[Char]) {
 
-    val allNodes = root.descendantsAndSelf
+    val allNodes = root.descendantsAndSelf.toList
 
     val minDepth = allNodes.filter(_.isTerminal).map(_.depth).min
 
@@ -130,7 +127,7 @@ object CWSearch {
             case _ => ()
           }
         }
-      c => lookup.getOrElse(c, minDepth)
+      c => lookup.getOrElse(c, minDepth + 1)
     }
 
     def init(node: CWSearchNode): Unit = {

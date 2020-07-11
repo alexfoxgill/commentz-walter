@@ -39,5 +39,21 @@ object CWSearchSpec extends TestSuite {
 
       search.search("foobar") ==> Some(Result(0, "foo"))
     }
+
+    test("it finds a keyword among similar") {
+      val search = fixture("foot", "food")
+
+      search.search("fish food") ==> Some(Result(5, "food"))
+    }
+
+    test("it works when going down an incorrect path initially") {
+      val search = fixture("bb")
+
+      search.search("abb") ==> Some(Result(1, "bb"))
+    }
+
+    test("demo") {
+      val search = fixture("cacbaa", "acb", "aba", "acbab", "ccbab")
+    }
   }
 }
